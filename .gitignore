@@ -1,12 +1,9 @@
-#Packages
-package-lock.json
-package.json
-
 # Dependencies
 node_modules/
 
 # Build output
 .next/
+out/
 dist/
 build/
 
