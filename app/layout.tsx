@@ -9,6 +9,16 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'Chat RenovMX - Renovables del Sur México',
   description: 'Chatbot inteligente para Renovables del Sur México',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Chat RenovMX',
+  },
+  icons: {
+    icon: '/renovables-logo.png',
+    apple: '/renovables-logo.png',
+  },
 }
 
 export default function RootLayout({

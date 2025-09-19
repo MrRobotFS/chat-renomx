@@ -1,23 +1,23 @@
 /** @type {import('next').NextConfig} */
+const isDev = process.env.NODE_ENV === 'development'
+
 const nextConfig = {
-  // Static export for hosting providers like Hostinger
-  output: 'export',
+  // Static export only for production builds
+  ...(isDev ? {} : {
+    output: 'export',
+    basePath: '/chatbot',
+    assetPrefix: '/chatbot/',
+  }),
+
   trailingSlash: true,
-  
-  // Configuration for subdirectory deployment
-  basePath: '/chatbot',
-  assetPrefix: '/chatbot/',
-  
+
   images: {
     unoptimized: true, // Required for static export
   },
-  
-  // Environment variables (these will be embedded at build time)
-  env: {
-    NEXT_PUBLIC_API_BASE_URL: 'https://renovablesdelsurmx.online:8443',
-    NEXT_PUBLIC_N8N_WEBHOOK_URL: 'https://n8n.srv865372.hstgr.cloud/webhook/615091e3-d7c3-477d-9d64-fae01c60845b',
-  },
-  
+
+  // Environment variables will be read from .env files
+  // No need to hardcode them here
+
   // Performance optimizations
   compiler: {
     removeConsole: {

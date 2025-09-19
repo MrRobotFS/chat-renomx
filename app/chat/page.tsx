@@ -8,6 +8,7 @@ import { TypingIndicator } from '@/components/chat/TypingIndicator'
 import { EmptyState } from '@/components/chat/EmptyState'
 import { ScrollToBottom } from '@/components/chat/ScrollToBottom'
 import { useChat } from '@/hooks/useChat'
+import { FileAttachment } from '@/lib/types'
 import { useAuth } from '@/contexts/AuthContext'
 import AuthLoading from '@/components/auth/AuthLoading'
 
@@ -48,8 +49,11 @@ export default function ChatPage() {
     return <AuthLoading />
   }
 
-  const handleSendMessage = async (content: string) => {
-    await sendMessage(content)
+  const handleSendMessage = async (content: string, file?: FileAttachment) => {
+    console.log('=== HANDLE SEND MESSAGE IN PAGE ===')
+    console.log('Content:', content)
+    console.log('File:', file)
+    await sendMessage(content, file)
   }
 
   const messages = currentConversation?.messages || []

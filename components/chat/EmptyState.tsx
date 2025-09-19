@@ -1,5 +1,6 @@
 import { Wind, Lightbulb, Zap, Leaf } from 'lucide-react'
 import Image from 'next/image'
+import { getAssetPath } from '@/lib/utils'
 
 interface EmptyStateProps {
   onSendMessage?: (message: string) => void
@@ -34,7 +35,7 @@ export function EmptyState({ onSendMessage }: EmptyStateProps) {
       <div className="text-center max-w-2xl">
         <div className="inline-flex items-center justify-center w-24 h-24 bg-white rounded-full mb-6 p-3 shadow-lg">
           <Image 
-            src="/renovables-logo.png" 
+            src={getAssetPath('/renovables-logo.png')} 
             alt="Renovables del Sur MX" 
             width={72}
             height={72}

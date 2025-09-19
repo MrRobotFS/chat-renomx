@@ -1,4 +1,4 @@
-// File: /Users/maximilianocarrionorozco/Documents/Projects/chat-renomx/app/chat/layout.tsx
+// File: /Users/maximilianocarrion/Documents/Projects/chat-renomx/app/chat/layout.tsx
 import * as entry from '../../../../app/chat/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

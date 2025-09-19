@@ -1,6 +1,8 @@
 import { User, Check, CheckCheck, AlertCircle, Copy, Clock, FileText, Image as ImageIcon, Video, Music, Archive, Download } from 'lucide-react'
 import { Message } from '@/lib/types'
 import { useState } from 'react'
+import { getAssetPath } from '@/lib/utils'
+import ReactMarkdown from 'react-markdown'
 
 interface ChatMessageProps {
   message: Message
@@ -74,7 +76,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
             <User className="h-5 w-5 text-white" />
           ) : (
             <img 
-              src="/renovables-logo.png" 
+              src={getAssetPath('/renovables-logo.png')} 
               alt="Renobot" 
               className="w-full h-full object-contain"
             />
@@ -134,9 +136,15 @@ export function ChatMessage({ message }: ChatMessageProps) {
               </div>
             )}
             
-            <p className="text-sm leading-relaxed whitespace-pre-wrap break-words word-wrap overflow-wrap-anywhere">
-              {message.content}
-            </p>
+            {message.is_user ? (
+              <p className="text-sm leading-relaxed whitespace-pre-wrap break-words word-wrap overflow-wrap-anywhere">
+                {message.content}
+              </p>
+            ) : (
+              <div className="text-sm leading-relaxed prose prose-sm max-w-none prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:text-gray-900 dark:prose-p:text-white prose-strong:text-gray-900 dark:prose-strong:text-white prose-table:text-gray-900 dark:prose-table:text-white prose-th:border-gray-300 dark:prose-th:border-gray-600 prose-td:border-gray-300 dark:prose-td:border-gray-600">
+                <ReactMarkdown>{message.content}</ReactMarkdown>
+              </div>
+            )}
 
             {/* Message Actions */}
             <div className={`

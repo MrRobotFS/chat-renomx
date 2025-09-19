@@ -2,6 +2,7 @@
 
 import { Plus, MessageCircle, Settings, LogOut, Trash2 } from 'lucide-react'
 import { Conversation, User } from '@/lib/types'
+import { getAssetPath } from '@/lib/utils'
 
 interface SidebarProps {
   isOpen: boolean
@@ -36,7 +37,7 @@ export function Sidebar({
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-2">
           <img 
-            src="/renovables-logo.png" 
+            src={getAssetPath('/renovables-logo.png')} 
             alt="Renovables del Sur MX" 
             className="h-8 w-8 object-contain"
           />

@@ -33,25 +33,15 @@ export function useChat() {
     }
   }, [isAuthenticated, user])
 
-  // Save conversations to localStorage and sessionStorage when they change
+  // Save conversations to localStorage when they change
   useEffect(() => {
     if (isAuthenticated && user && typeof window !== 'undefined') {
       const storageKey = `conversations_${user.employee.id}`
-      const sessionKey = `session_conversations_${user.employee.id}`
-      
+
       if (state.conversations.length > 0) {
         try {
-          // Filter out conversations without messages to avoid saving empty ones
-          const conversationsToSave = state.conversations.filter(conv => 
-            conv.messages && conv.messages.length > 0
-          )
-          
-          // If there are conversations with messages, save them
-          if (conversationsToSave.length > 0) {
-            const conversationsJson = JSON.stringify(conversationsToSave)
-            localStorage.setItem(storageKey, conversationsJson)
-            sessionStorage.setItem(sessionKey, conversationsJson)
-          }
+          const conversationsJson = JSON.stringify(state.conversations)
+          localStorage.setItem(storageKey, conversationsJson)
         } catch (error) {
           console.error('Failed to save conversations:', error)
         }
@@ -59,13 +49,8 @@ export function useChat() {
     } else if (!isAuthenticated && typeof window !== 'undefined') {
       // Clear storage when not authenticated
       Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('conversations_') || key.startsWith('session_conversations_')) {
+        if (key.startsWith('conversations_')) {
           localStorage.removeItem(key)
-        }
-      })
-      Object.keys(sessionStorage).forEach(key => {
-        if (key.startsWith('conversations_') || key.startsWith('session_conversations_')) {
-          sessionStorage.removeItem(key)
         }
       })
     }
@@ -78,10 +63,10 @@ export function useChat() {
       const storageKey = `conversations_${user.employee.id}`
       const sessionKey = `session_conversations_${user.employee.id}`
       
-      // Try localStorage first, then sessionStorage
+      // Try localStorage
       let storedConversations = null
       if (typeof window !== 'undefined') {
-        storedConversations = localStorage.getItem(storageKey) || sessionStorage.getItem(sessionKey)
+        storedConversations = localStorage.getItem(storageKey)
       }
       
       if (storedConversations) {
@@ -104,9 +89,8 @@ export function useChat() {
               return { ...prev, conversations: mergedConversations }
             })
             
-            // Sync to both storages
+            // Sync to localStorage
             localStorage.setItem(storageKey, JSON.stringify(storedConvsArray))
-            sessionStorage.setItem(sessionKey, JSON.stringify(storedConvsArray))
             return
           }
         } catch (parseError) {
@@ -121,7 +105,6 @@ export function useChat() {
         // Store fetched conversations
         if (typeof window !== 'undefined') {
           localStorage.setItem(storageKey, JSON.stringify(conversations))
-          sessionStorage.setItem(sessionKey, JSON.stringify(conversations))
         }
       } catch (error) {
         console.log('Backend not available, starting with empty conversations')
@@ -269,6 +252,15 @@ export function useChat() {
     });
 
     try {
+      console.log('Sending message with file:', file ? {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        extension: file.extension,
+        hasUrl: !!file.url,
+        hasDriveId: !!file.driveId
+      } : 'No file');
+
       const response = await apiClient.sendMessage({
         message: content,
         conversation_id: conversationId,
@@ -285,9 +277,11 @@ export function useChat() {
         has_file: false,
       };
 
+      console.log('Adding AI message:', aiMessage.content);
+
       setState(prev => {
-        const updatedConversations = prev.conversations.map(conv => 
-          conv.id === conversationId 
+        const updatedConversations = prev.conversations.map(conv =>
+          conv.id === conversationId
             ? {
                 ...conv,
                 messages: [...(conv.messages || []), aiMessage],
@@ -295,6 +289,8 @@ export function useChat() {
               }
             : conv
         );
+
+        console.log('Updated conversations with AI message:', updatedConversations.find(c => c.id === conversationId)?.messages?.length);
 
         return {
           ...prev,

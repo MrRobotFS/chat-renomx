@@ -2,6 +2,7 @@ import { LoginRequest, LoginResponse, ChatRequest, ChatResponse, Conversation, U
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'
 const API_BASE = `${BASE_URL}/api/chatbot`
+const N8N_WEBHOOK_URL = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || 'https://n8n.srv865372.hstgr.cloud/webhook/615091e3-d7c3-477d-9d64-fae01c60845b'
 
 class ApiClient {
   private token: string | null = null
@@ -92,22 +93,17 @@ class ApiClient {
   }
 
   async sendMessage(chatRequest: ChatRequest, userContext?: any): Promise<ChatResponse> {
-    const url = 'https://n8n.srv865372.hstgr.cloud/webhook/615091e3-d7c3-477d-9d64-fae01c60845b';
-    const headers = {
-      'Content-Type': 'application/json',
-    };
-
-    // Prepare payload with user context and file information
+    // Call n8n webhook directly
     const payload = {
       message: chatRequest.message,
-      conversation_id: chatRequest.conversation_id,
-      has_file: chatRequest.has_file || false,
+      conversation_id: chatRequest.conversation_id || this.generateConversationId(),
+      has_file: !!chatRequest.file,
       file: chatRequest.file ? {
         name: chatRequest.file.name,
         size: chatRequest.file.size,
         type: chatRequest.file.type,
         extension: chatRequest.file.extension,
-        data: chatRequest.file.data // base64 si está disponible
+        data: chatRequest.file.data
       } : null,
       user: userContext ? {
         email: userContext.email,
@@ -118,60 +114,83 @@ class ApiClient {
         role_code: userContext.employee?.role_code,
         employee_id: userContext.employee?.employee_id
       } : null
-    };
+    }
 
     try {
-      const startTime = Date.now();
-      
-      const apiResponse = await fetch(url, {
+      const response = await fetch(N8N_WEBHOOK_URL, {
         method: 'POST',
-        headers,
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(payload),
-      });
+      })
 
-      if (!apiResponse.ok) {
-        throw new Error(`HTTP error! status: ${apiResponse.status}`);
+      if (!response.ok) {
+        throw new Error(`N8N webhook error! status: ${response.status}`)
       }
 
-      const responseData = await apiResponse.json();
-      const endTime = Date.now();
-      const responseTime = endTime - startTime;
-      
-      const aiContent = responseData[0]?.output || "Lo siento, no pude obtener una respuesta.";
+      const responseData = await response.json()
 
-      const conversationId = chatRequest.conversation_id || crypto.randomUUID();
+      // Parse n8n response
+      let ai_content = 'No response from AI'
+      if (Array.isArray(responseData) && responseData.length > 0) {
+        ai_content = responseData[0].output || 'No response from AI'
+      } else if (responseData.output) {
+        ai_content = responseData.output
+      }
 
-      const userMessage: Message = {
-        id: Date.now(),
-        content: chatRequest.message,
-        is_user: true,
-        timestamp: new Date().toISOString(),
-        has_file: chatRequest.has_file || false,
-        file: chatRequest.file,
-      };
-
-      const aiMessage: Message = {
-        id: Date.now() + 1,
-        content: aiContent,
-        is_user: false,
-        timestamp: new Date().toISOString(),
-        response_time: responseTime,
-        has_file: false,
-      };
-
+      // Create standardized response format
       const chatResponse: ChatResponse = {
-        conversation_id: conversationId,
-        user_message: userMessage,
-        ai_response: aiMessage,
-        source: 'n8n_webhook',
-      };
+        conversation_id: payload.conversation_id,
+        user_message: {
+          id: Date.now(),
+          content: chatRequest.message,
+          is_user: true,
+          timestamp: new Date().toISOString(),
+          has_file: !!chatRequest.file,
+          file: chatRequest.file
+        },
+        ai_response: {
+          id: Date.now() + 1,
+          content: ai_content,
+          is_user: false,
+          timestamp: new Date().toISOString(),
+          has_file: false
+        },
+        source: 'n8n_direct'
+      }
 
-      return chatResponse;
-
+      return chatResponse
     } catch (error) {
-      console.error('API request failed:', error);
-      throw error;
+      console.error('N8N webhook request failed:', error)
+
+      // Return error response in expected format
+      const errorResponse: ChatResponse = {
+        conversation_id: payload.conversation_id,
+        user_message: {
+          id: Date.now(),
+          content: chatRequest.message,
+          is_user: true,
+          timestamp: new Date().toISOString(),
+          has_file: !!chatRequest.file,
+          file: chatRequest.file
+        },
+        ai_response: {
+          id: Date.now() + 1,
+          content: `Lo siento, hubo un problema de conexión: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+          is_user: false,
+          timestamp: new Date().toISOString(),
+          has_file: false
+        },
+        source: 'n8n_direct_error'
+      }
+
+      return errorResponse
     }
+  }
+
+  private generateConversationId(): string {
+    return `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
 
   async uploadFile(conversationId: string, file: File): Promise<any> {

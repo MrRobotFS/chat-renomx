@@ -7,6 +7,7 @@ import LoginForm from '@/components/auth/LoginForm'
 import AuthLoading from '@/components/auth/AuthLoading'
 import { User } from '@/lib/types'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { getAssetPath } from '@/lib/utils'
 
 export default function HomePage() {
   const { user, isAuthenticated, isLoading: authLoading, login } = useAuth()
@@ -49,7 +50,7 @@ export default function HomePage() {
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full mb-4 p-2 shadow-lg">
               <img 
-                src="/renovables-logo.png" 
+                src={getAssetPath('/renovables-logo.png')} 
                 alt="Renovables del Sur MX" 
                 className="w-full h-full object-contain"
               />

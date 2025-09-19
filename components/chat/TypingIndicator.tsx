@@ -1,3 +1,5 @@
+import { getAssetPath } from '@/lib/utils'
+
 export function TypingIndicator() {
   return (
     <div className="flex justify-start mb-6 group">
@@ -5,7 +7,7 @@ export function TypingIndicator() {
         {/* Avatar */}
         <div className="flex-shrink-0 w-10 h-10 bg-white dark:bg-dark rounded-full flex items-center justify-center p-1 shadow-sm">
           <img 
-            src="/renovables-logo.png" 
+            src={getAssetPath('/renovables-logo.png')} 
             alt="Renobot" 
             className="w-full h-full object-contain"
           />

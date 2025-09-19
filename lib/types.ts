@@ -38,8 +38,10 @@ export interface FileAttachment {
   size: number
   type: string
   extension: string
-  url?: string
-  data?: string // base64 para archivos pequeños
+  data?: string // base64 data para enviar a n8n
+  duration?: number // duración en segundos para archivos de audio
+  url?: string // URL del archivo si está disponible
+  driveId?: string // ID de Google Drive si aplica
 }
 
 export interface Message {

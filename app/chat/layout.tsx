@@ -5,6 +5,7 @@ import { Sidebar } from '@/components/chat/Sidebar'
 import { Header } from '@/components/chat/Header'
 import { useChat } from '@/hooks/useChat'
 import { useAuth } from '@/contexts/AuthContext'
+import { PWAInstallPrompt } from '@/components/PWAInstallPrompt'
 
 export default function ChatLayout({
   children,
@@ -78,6 +79,9 @@ export default function ChatLayout({
           {children}
         </main>
       </div>
+
+      {/* PWA Install Prompt */}
+      <PWAInstallPrompt />
     </div>
   )
 }
